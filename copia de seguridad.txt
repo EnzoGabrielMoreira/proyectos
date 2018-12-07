@@ -1,0 +1,118 @@
+var juego = new Phaser.Game(1280 , 720 , Phaser.AUTO, '' ,{preload: preload , create: create, update : update}) ;
+
+var jugador;
+var stats = {
+    vidas : 3 ,
+    puntos : 0 ,
+        pwp : {
+        volar:false ,
+        extraLife : false ,
+        velocidad : false,
+     } 
+    
+    
+}
+var plataformas;
+var coin ;
+var flechitas ;
+const gravedad = 600;
+
+
+function preload () {
+     this.load.image('fondo','imagenes/nivel/fondo.png' ) ;
+     this.load.image('piso','imagenes/nivel/plat_l.png'  ) ;
+     this.load.image('plat4','imagenes/nivel/plat_m.png'  ) ;
+     this.load.image('plat3','imagenes/nivel/plat_s.png'  ) ;
+     this.load.image('plat2','imagenes/nivel/plat_sx.png'  ) ;
+     this.load.image('plat1','imagenes/nivel/plat_sxx.png'  ) ;
+     this.load.spritesheet('pj','imagenes/nivel/pj.png',36.833333,70) ;
+     this.load.spritesheet('coin', 'imagenes/Pampa/pickup.png')
+    
+} 
+
+    function fijar (plataformas){
+        for (i=0; i < plataformas.children.length; i++) {
+            plataformas.children[i].body.moves=false ;
+            plataformas.children[i].body.immovable = true;
+            
+        }
+    }
+
+function create () {
+        juego.physics.startSystem(Phaser.Physics.ARCADE);
+        this.physics.arcade.gravity.y = gravedad ;
+        this.add.image(0,0,'fondo') ;
+    
+        plataformas = juego.add.group () ;
+        plataformas.enableBody= true ;
+        plataformas.create(700,660,'piso') ;
+        plataformas.create(-50,660,'piso') ;
+        plataformas.create(0,100,'plat1') ;
+        plataformas.create(1000,450,'plat1') ;
+        plataformas.create(1000,200,'plat1') ;
+        plataformas.create(200,200,'plat2') ;
+        plataformas.create(100,400,'plat3') ;
+        fijar (plataformas);
+    
+        coin = juego.add.group() ;
+        coin.enableBody=true;
+        coin.create(1000,100,'coin');
+        coin.create(200,350,'coin') ;
+        coin.create(800,600,'coin') ;
+        fijar(coin) ;
+    
+    
+        jugador = this.add.sprite(0,0,'pj') ;
+        juego.physics.arcade.enable(jugador);
+        jugador.body.collideWorldBounds = true;
+        jugador.animations.add("parado", [0],12,true);
+        jugador.animations.add("caminar", [3,4,5], 12,false);
+        jugador.animations.add("caminarleft", [9,10,11], 12,false);
+    
+        flechitas = this.input.keyboard.createCursorKeys();
+} 
+
+
+function update () {
+    
+    this.physics.arcade.collide(jugador,plataformas) ;
+    this.physics.arcade.overlap(jugador,coin,up);
+    
+    
+    if (flechitas.right.isUp && flechitas.left.isUp) {
+        jugador.body.velocity.x = 0 ;
+        jugador.animations.play ('parado') ;
+       
+    }    
+    if(flechitas.right.isDown){
+    
+    jugador.body.velocity.x = 200;
+        jugador.animations.play ('caminar') ;
+        
+    }   
+       if(flechitas.left.isDown){
+    
+    jugador.body.velocity.x = -200;
+           jugador.animations.play ('caminarleft') ;
+    }  
+    if(flechitas.up.isDown){
+    
+    jugador.body.velocity.y = -300;
+    }   
+    if(flechitas.down.isDown){
+    
+    jugador.body.velocity.y = 300;
+    }
+    
+  
+    
+}
+
+function up (jugador,coin) {
+    coin.kill();
+    stats.pwp.extraLife = true
+    if (stats.pwp.extraLife == true) {
+        stats.vidas++ ;
+    }
+}
+ 
